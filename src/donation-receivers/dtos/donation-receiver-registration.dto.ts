@@ -15,5 +15,6 @@ export class DonationReceiverRegistrationDto {
     @IsNotEmpty()
     country: string
 
+    onboardingCompleteToken: string
     user: User
 }

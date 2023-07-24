@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectStripe } from 'nestjs-stripe';
-import { UrlGeneratorService } from 'nestjs-url-generator';
 import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/donation-receiver-registration.dto';
 import Stripe from 'stripe';
 
 @Injectable()
 export class StripeConnectService {
     constructor(
-        @InjectStripe() private readonly stripeClient: Stripe,
-        private readonly urlGeneratorService: UrlGeneratorService
+        @InjectStripe() private readonly stripeClient: Stripe
     ) {}
 
     async createConnectedAccount(params: DonationReceiverRegistrationDto) {

@@ -18,6 +18,12 @@ class DonationReceiver {
   @Column()
   public country: string
 
+  @Column({nullable: true})
+  public onboardingCompleteToken: string
+
+  @Column({default: false})
+  public verified: boolean
+
   @JoinColumn()
   @OneToOne(() => User)
   public user: User;
