@@ -5,8 +5,6 @@ import { Repository } from 'typeorm';
 import { UserSigninParamsDto } from './dtos/user-signin-params.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { iTokens } from './interfaces/tokens.interface';
 import { iUserJwtPayload } from './interfaces/user-jwt-payload.interfact';
 
 @Injectable()
@@ -15,7 +13,6 @@ export class AuthService {
         @InjectRepository(User)
         private userRepository: Repository<User>,
         private jwtService: JwtService,
-        private configService: ConfigService
     ) { }
 
     async validateUser(params: UserSigninParamsDto): Promise<any> {
@@ -38,8 +35,8 @@ export class AuthService {
     async login(user: User): Promise<string> {
         const payload: iUserJwtPayload = {
             id: user.id
-        } 
-        
+        }
+
         const accessToken = await this.jwtService.signAsync(payload)
 
         return accessToken;

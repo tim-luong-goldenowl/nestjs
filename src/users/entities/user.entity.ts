@@ -1,6 +1,6 @@
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
- 
+
 @Entity()
 class User {
   @PrimaryGeneratedColumn()
@@ -20,6 +20,9 @@ class User {
 
   @Column()
   public password: string
+
+  @OneToOne(() => DonationReceiver, (donationReceiver: DonationReceiver) => donationReceiver.user)
+  public donationReceiver: DonationReceiver;
 }
- 
+
 export default User;
