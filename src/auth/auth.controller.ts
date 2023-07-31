@@ -27,6 +27,10 @@ export class AuthController {
     @UseGuards(LocalAuthGuard)
     @Post('signin')
     async signin(@Request() req) {
-        return this.authService.login(req.user);
+        const jwtToken = await this.authService.login(req.user);
+
+        return {
+            token: jwtToken
+        };
     }
 }
