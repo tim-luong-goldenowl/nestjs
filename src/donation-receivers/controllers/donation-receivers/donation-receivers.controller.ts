@@ -12,7 +12,11 @@ export class DonationReceiversController {
 
     @Get()
     async getDonationReceivers() {
-        return await this.donationRecieverService.getAll()
+        const data = await this.donationRecieverService.getAll()
+        
+        return {
+            data
+        }
     }
 
     @Post('register')
