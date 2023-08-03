@@ -22,7 +22,7 @@ import { UsersMiddleware } from 'src/users/middlewares/users/users.middleware';
         return {
           global: true,
           secret: configService.get('AT_SECRECT'),
-          signOptions: { expiresIn: 7200 },
+          signOptions: { expiresIn: 3600 * 7 },
         }
       },
     })

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, Response, UseGuards } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from 'src/users/services/users/users.service';
 import { UserRegistrationParamsDto } from './dtos/user-registration-params.dto';
@@ -26,11 +26,18 @@ export class AuthController {
     @Public()
     @UseGuards(LocalAuthGuard)
     @Post('signin')
-    async signin(@Request() req) {
+    async signin(@Request() req, @Response() res) {
         const jwtToken = await this.authService.login(req.user);
 
-        return {
-            token: jwtToken
-        };
+        res.cookie('token', jwtToken, {
+            expires: new Date(new Date().getTime() + 3600 * 7),
+            sameSite: 'strict',
+            httpOnly: true,
+            secure: false,
+            maxAge: 3600 * 7,
+            path: '/'
+          });
+
+        return res.send();
     }
 }
