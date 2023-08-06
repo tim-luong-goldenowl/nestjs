@@ -44,8 +44,6 @@ export class DonationReceiversController {
 
     @Put('/update-profile')
     async updateProfile(@Body() params: DonationReceiverDto) {
-        console.log("@@@@@@@@@params", params)
-
         const user = await this.donationRecieverService.update(params);
         return user;
     }
