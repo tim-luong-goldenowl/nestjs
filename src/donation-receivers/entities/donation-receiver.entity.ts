@@ -18,6 +18,9 @@ class DonationReceiver {
   @Column()
   public country: string
 
+  @Column({type: 'text', nullable: true})
+  public bio: string
+
   @Column({nullable: true})
   public onboardingCompleteToken: string
 

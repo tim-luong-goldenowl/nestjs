@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UrlGeneratorService } from 'nestjs-url-generator';
 import { DonationReceiversController } from 'src/donation-receivers/controllers/donation-receivers/donation-receivers.controller';
@@ -6,7 +6,8 @@ import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/don
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
 import { StripeConnectService } from 'src/stripe/services/stripe-connect/stripe-connect.service';
 import { Repository } from 'typeorm';
-import {randomBytes} from 'crypto';
+import { randomBytes } from 'crypto';
+import { DonationReceiverDto } from 'src/donation-receivers/dtos/donation-receiver.dto';
 
 @Injectable()
 export class DonationReceiversService {
@@ -20,7 +21,15 @@ export class DonationReceiversService {
     async getAll() {
         return this.donationReceiverRepository.find({})
     }
-    
+
+    async getById(id: number) {
+        return this.donationReceiverRepository.findOne({
+            where: {
+                id
+            }
+        })
+    }
+
     async create(params: DonationReceiverRegistrationDto): Promise<any> {
         const existingConnectedAccount = await this.donationReceiverRepository.findOne({
             where: {
@@ -64,8 +73,19 @@ export class DonationReceiversService {
             }
         })
 
-        if(donationReceiver) {
-            this.donationReceiverRepository.update(donationReceiver, {verified: true})
+        if (donationReceiver) {
+            this.donationReceiverRepository.update(donationReceiver, { verified: true })
+        }
+    }
+
+    async update(params: DonationReceiverDto): Promise<DonationReceiver> {
+        try {
+            return await this.donationReceiverRepository.save({
+                id: params.id,
+                ...params
+            });
+        } catch (error) {
+            throw BadRequestException
         }
     }
 }

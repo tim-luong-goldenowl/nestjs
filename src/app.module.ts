@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { UsersModule } from './users/users.module';
 import { DonationReceiversModule } from './donation-receivers/donation-receivers.module';
 import { StripeUltilsModule } from './stripe/stripe.module';
@@ -11,6 +11,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { UrlGeneratorModule } from 'nestjs-url-generator';
 import { urlGeneratorModuleConfig } from './configs/signed-url.config';
+import { UsersMiddleware } from './users/middlewares/users/users.middleware';
 
 @Module({
   imports: [
@@ -35,4 +36,11 @@ import { urlGeneratorModuleConfig } from './configs/signed-url.config';
     }
   ],
 })
-export class AppModule {}
+
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(
+      UsersMiddleware
+    ).forRoutes('users')
+  }
+}

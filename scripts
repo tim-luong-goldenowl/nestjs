@@ -1,0 +1,3 @@
+// for generate migration file from changes fomr entities files
+
+// yarn migration:generate .\db\migrations\add-bio-to-donation-receivers

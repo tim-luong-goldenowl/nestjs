@@ -30,14 +30,13 @@ export class AuthController {
         const jwtToken = await this.authService.login(req.user);
 
         res.cookie('token', jwtToken, {
-            expires: new Date(new Date().getTime() + 3600 * 7),
-            sameSite: 'strict',
+            expires: new Date(new Date().getTime() + 7200000),
             httpOnly: true,
             secure: false,
-            maxAge: 3600 * 7,
+            maxAge: 7200000,
             path: '/'
           });
 
-        return res.send();
+        return res.send({success: true});
     }
 }

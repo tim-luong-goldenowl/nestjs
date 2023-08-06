@@ -1,4 +1,7 @@
-export type iUser = {
-    name: string,
-    age: number
+export default interface IUser {
+    id: number
+    firstName: string
+    lastName: string
+    email: string
+    dob?: Date
 }
