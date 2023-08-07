@@ -28,7 +28,7 @@ import { NestjsFormDataModule } from 'nestjs-form-data';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => urlGeneratorModuleConfig(configService),
-    }),
+    })
   ],
   controllers: [],
   providers: [

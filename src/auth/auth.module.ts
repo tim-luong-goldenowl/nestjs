@@ -9,12 +9,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersMiddleware } from 'src/users/middlewares/users/users.middleware';
+import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, UsersService, ConfigService, LocalStrategy, JwtStrategy],
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, DonationReceiver]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

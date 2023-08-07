@@ -5,11 +5,16 @@ import { UsersService } from './services/users/users.service';
 import User from './entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NestjsFormDataModule } from 'nestjs-form-data';
+import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   controllers: [UsersController],
   providers: [UsersService],
-  imports: [TypeOrmModule.forFeature([User]), NestjsFormDataModule]
+  imports: [TypeOrmModule.forFeature([User, DonationReceiver]), NestjsFormDataModule,
+  MulterModule.register({
+    dest: './files'
+  })]
 })
 export class UsersModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
