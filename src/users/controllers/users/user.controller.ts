@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Put, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { FormDataRequest } from 'nestjs-form-data';
 import { UserDto } from 'src/users/dtos/user.dto';
 import { UsersService } from 'src/users/services/users/users.service';
 
@@ -32,10 +33,13 @@ export class UsersController {
         }
     }
 
+
+
     @Put('/update-profile')
     @UseInterceptors(FileInterceptor('avatar', {}))
     async updateProfile(@Body() params: UserDto, @UploadedFile() avatar: Express.Multer.File) {
         console.log("@@@@@@@@@@@@@@@avatar", avatar)
+        console.log("@@@@@@@@@@@@@@@params", params)
         const user = await this.userService.updateUser(params);
         return user;
     }

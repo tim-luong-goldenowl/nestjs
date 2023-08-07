@@ -4,11 +4,12 @@ import { UsersMiddleware } from './middlewares/users/users.middleware';
 import { UsersService } from './services/users/users.service';
 import User from './entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { NestjsFormDataModule } from 'nestjs-form-data';
 
 @Module({
   controllers: [UsersController],
   providers: [UsersService],
-  imports: [TypeOrmModule.forFeature([User])]
+  imports: [TypeOrmModule.forFeature([User]), NestjsFormDataModule]
 })
 export class UsersModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -12,12 +12,14 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { UrlGeneratorModule } from 'nestjs-url-generator';
 import { urlGeneratorModuleConfig } from './configs/signed-url.config';
 import { UsersMiddleware } from './users/middlewares/users/users.middleware';
+import { NestjsFormDataModule } from 'nestjs-form-data';
 
 @Module({
   imports: [
     UsersModule,
     DonationReceiversModule,
     StripeUltilsModule,
+    NestjsFormDataModule,
     ConfigModule.forRoot(),
     DatabaseModule,
     TypeOrmModule.forFeature([User]),

@@ -36,7 +36,7 @@ export class UsersService {
                 ...params
             });
         } catch (error) {
-            throw BadRequestException
+            throw  new BadRequestException
         }
     }
 }
