@@ -10,14 +10,13 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersMiddleware } from 'src/users/middlewares/users/users.middleware';
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
-import FileStorage from 'src/file-storage/file-storage.entity';
-import { FileStorageService } from 'src/file-storage/file-storage.service';
+import { S3Service } from 'src/s3/s3.service';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, UsersService, FileStorageService, ConfigService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, S3Service, UsersService, ConfigService, LocalStrategy, JwtStrategy],
   imports: [
-    TypeOrmModule.forFeature([User, DonationReceiver, FileStorage]),
+    TypeOrmModule.forFeature([User, DonationReceiver]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

@@ -13,6 +13,7 @@ import { UrlGeneratorModule } from 'nestjs-url-generator';
 import { urlGeneratorModuleConfig } from './configs/signed-url.config';
 import { UsersMiddleware } from './users/middlewares/users/users.middleware';
 import { NestjsFormDataModule } from 'nestjs-form-data';
+import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { NestjsFormDataModule } from 'nestjs-form-data';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => urlGeneratorModuleConfig(configService),
-    })
+    }),
+    S3Module
   ],
   controllers: [],
   providers: [

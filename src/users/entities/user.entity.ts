@@ -1,5 +1,4 @@
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
-import FileStorage from 'src/file-storage/file-storage.entity';
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity()
@@ -22,7 +21,8 @@ class User {
   @Column()
   public password: string
 
-  public avatar?: FileStorage;
+  @Column({nullable: true})
+  public avatarUrl: string
 
   @OneToOne(() => DonationReceiver, (donationReceiver: DonationReceiver) => donationReceiver.user)
   public donationReceiver: DonationReceiver;
