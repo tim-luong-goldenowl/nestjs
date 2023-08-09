@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRegistrationParamsDto } from 'src/auth/dtos/user-registration-params.dto';
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
+import { FileStorageService } from 'src/file-storage/file-storage.service';
 import { UserDto } from 'src/users/dtos/user.dto';
 import User from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -11,6 +12,7 @@ export class UsersService {
     constructor(
         @InjectRepository(User)
         private userRepository: Repository<User>,
+        private fileStorageService: FileStorageService,
         @InjectRepository(DonationReceiver) private donationReceiverRepository: Repository<DonationReceiver>
     ) { }
 
@@ -49,19 +51,21 @@ export class UsersService {
         }
     }
 
-    async updateUser(params: any): Promise<User> {
+    async updateUser(params: any, avatar): Promise<User> {
         try {
             const tParams = {
                 ...params,
                 dob: new Date(params.dob)
             }
-            
+
             delete tParams['id']
             const user = await this.userRepository.findOne({
                 where: {
                     id: parseInt(params.id)
                 }
             });
+
+            await this.fileStorageService.create(avatar)
 
             return await this.userRepository.save({
                 id: user.id,

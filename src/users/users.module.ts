@@ -7,11 +7,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NestjsFormDataModule } from 'nestjs-form-data';
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
 import { MulterModule } from '@nestjs/platform-express';
+import { FileStorageService } from 'src/file-storage/file-storage.service';
+import FileStorage from 'src/file-storage/file-storage.entity';
 
 @Module({
   controllers: [UsersController],
-  providers: [UsersService],
-  imports: [TypeOrmModule.forFeature([User, DonationReceiver]), NestjsFormDataModule,
+  providers: [UsersService, FileStorageService],
+  imports: [TypeOrmModule.forFeature([User, DonationReceiver, FileStorage]), NestjsFormDataModule,
   MulterModule.register({
     dest: './files'
   })]

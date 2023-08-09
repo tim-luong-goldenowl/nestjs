@@ -27,7 +27,7 @@ export class UsersController {
     async updateProfile(@Body() params, @UploadedFile() avatar) {
         console.log("@@@@@@@@@@@@@@@avatar", avatar)
         console.log("@@@@@@@@@@@@@@@params", params)
-        const user = await this.userService.updateUser(params);
+        const user = await this.userService.updateUser(params, avatar);
         return user;
     }
 }
