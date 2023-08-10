@@ -14,6 +14,7 @@ import { urlGeneratorModuleConfig } from './configs/signed-url.config';
 import { UsersMiddleware } from './users/middlewares/users/users.middleware';
 import { NestjsFormDataModule } from 'nestjs-form-data';
 import { S3Module } from './s3/s3.module';
+import { DonationModule } from './donation/donation.module';
 
 @Module({
   imports: [
@@ -30,7 +31,8 @@ import { S3Module } from './s3/s3.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => urlGeneratorModuleConfig(configService),
     }),
-    S3Module
+    S3Module,
+    DonationModule
   ],
   controllers: [],
   providers: [
@@ -45,6 +47,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(
       UsersMiddleware
-    ).forRoutes('users')
+    )
   }
 }

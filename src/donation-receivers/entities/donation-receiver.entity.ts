@@ -1,8 +1,10 @@
+import Donation from 'src/donation/donation.entity';
 import User from 'src/users/entities/user.entity';
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
  
 @Entity()
 class DonationReceiver {
+  @Index()
   @PrimaryGeneratedColumn()
   public id: number;
   
@@ -30,6 +32,9 @@ class DonationReceiver {
   @JoinColumn()
   @OneToOne(() => User)
   public user: User;
+  
+  @OneToMany(() => Donation, (donation) => donation.donationReceiver)
+  donations: Donation[]
 }
  
 export default DonationReceiver;

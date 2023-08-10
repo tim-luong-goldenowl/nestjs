@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { StripeConnectService } from './services/stripe-connect/stripe-connect.service';
 import { StripeModule } from 'nestjs-stripe';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PaymentIntentService } from './services/payments/payment-intent.service';
 
 @Module({
-  providers: [StripeConnectService],
+  providers: [StripeConnectService, PaymentIntentService],
   imports: [
     StripeModule.forRootAsync({
       imports: [ConfigModule],
@@ -14,6 +15,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         apiVersion: '2022-11-15'
       })
     })
-  ]
+  ],
+   exports: [PaymentIntentService]
 })
 export class StripeUltilsModule {}

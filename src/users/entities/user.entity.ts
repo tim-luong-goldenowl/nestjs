@@ -1,8 +1,10 @@
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import Donation from 'src/donation/donation.entity';
+import { Column, Entity, Index, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity()
 class User {
+  @Index()
   @PrimaryGeneratedColumn()
   public id: number;
 
@@ -26,6 +28,9 @@ class User {
 
   @OneToOne(() => DonationReceiver, (donationReceiver: DonationReceiver) => donationReceiver.user)
   public donationReceiver: DonationReceiver;
+
+  @OneToMany(() => Donation, (donation) => donation.user)
+  donations: Donation[]
 }
 
 export default User;
