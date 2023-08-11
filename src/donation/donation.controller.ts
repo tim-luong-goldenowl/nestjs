@@ -10,7 +10,6 @@ export class DonationController {
 
     @Post()
     async createDonation(@Body() params: DonationDto, @Req() req) {
-        console.log("@@@@@@@@@params", params)
         const donation = await this.donationService.create(params, req.user);
 
         return donation;

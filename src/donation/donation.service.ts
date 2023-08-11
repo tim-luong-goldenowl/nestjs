@@ -13,16 +13,30 @@ export class DonationService {
         @InjectRepository(Donation)
         private donationRepository: Repository<Donation>,
         private paymentIntentService: PaymentIntentService,
-        @InjectRepository(DonationReceiver) private donationReceiverRepository: Repository<DonationReceiver>
+        @InjectRepository(DonationReceiver) private donationReceiverRepository: Repository<DonationReceiver>,
+        @InjectRepository(User) private userRepository: Repository<User>
     ) { }
 
     async create(params: DonationDto, donateUser: User): Promise<any> {
         try {
-            const intentRes = await this.paymentIntentService.createPaymentIntent(
-                params.value
-            )
+            let stripeCustomerId = donateUser.stipeCustomerId
 
-            console.log("@@@@@@@@@intentRes", intentRes)
+            if(!stripeCustomerId) {
+                const newCustomerId = await this.paymentIntentService.createCustomer(donateUser)
+                stripeCustomerId = newCustomerId
+
+                await this.userRepository.save({
+                    id: donateUser.id,
+                    ...{stripeCustomerId}
+                });
+            }
+
+            // const intentRes = await this.paymentIntentService.createPaymentIntent(
+            //     params.value,
+            //     stripeCustomerId
+            // )
+
+            console.log("@@@@@@@@@intentRes", stripeCustomerId)
             // const donationReceiver = await this.donationReceiverRepository.findOneBy({ id: params.donationReceiverId })
             // const donation = this.donationRepository.create({ ...params, user: donateUser, donationReceiver })
             // await this.donationRepository.save(donation);

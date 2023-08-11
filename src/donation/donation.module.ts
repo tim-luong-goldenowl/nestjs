@@ -6,11 +6,11 @@ import Donation from './donation.entity';
 import { StripeModule } from 'nestjs-stripe';
 import { PaymentIntentService } from 'src/stripe/services/payments/payment-intent.service';
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
+import User from 'src/users/entities/user.entity';
 
 @Module({
   controllers: [DonationController],
   providers: [DonationService, PaymentIntentService],
-  imports: [TypeOrmModule.forFeature([Donation, DonationReceiver]), StripeModule]
-
+  imports: [TypeOrmModule.forFeature([Donation, DonationReceiver, User]), StripeModule]
 })
 export class DonationModule {}

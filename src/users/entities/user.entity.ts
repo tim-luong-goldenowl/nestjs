@@ -24,6 +24,9 @@ class User {
   public password: string
 
   @Column({nullable: true})
+  public stipeCustomerId: string
+
+  @Column({nullable: true})
   public avatarUrl: string
 
   @OneToOne(() => DonationReceiver, (donationReceiver: DonationReceiver) => donationReceiver.user)
