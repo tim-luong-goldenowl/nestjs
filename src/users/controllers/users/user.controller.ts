@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Req, Res, SerializeOptions, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserDto } from 'src/users/dtos/user.dto';
 import { UsersService } from 'src/users/services/users/users.service';
@@ -17,8 +17,8 @@ export class UsersController {
 
     @Get('/profiles')
     async profiles(@Req() req) {
-        const profiles = await this.userService.getProfiles(req.user.id);
-
+        const profiles = await this.userService.getProfiles(req.user.id)
+        
         return profiles
     }
 

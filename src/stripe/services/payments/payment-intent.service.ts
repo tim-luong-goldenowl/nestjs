@@ -7,25 +7,17 @@ import Stripe from 'stripe';
 export class PaymentIntentService {
     constructor(
         @InjectStripe() private readonly stripeClient: Stripe
-    ) {}
+    ) { }
 
-    async createPaymentIntent(amount: number, customerId: string, metadata: any = {}) {
+    async createPaymentIntent(amount: number, customerId: string, metadata: any = {}): Promise<Stripe.Response<Stripe.PaymentIntent>> {
         const res = await this.stripeClient.paymentIntents.create({
             amount,
             currency: 'usd',
-            confirm: false,
+            confirm: true,
             metadata,
             customer: customerId
         })
 
         return res;
-    }
-
-    async createCustomer(user: User) {
-        const res = await this.stripeClient.customers.create({
-            email: user.email
-        })
-
-        return res.id
     }
 }

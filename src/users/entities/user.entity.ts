@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
 import Donation from 'src/donation/donation.entity';
 import { Column, Entity, Index, OneToMany, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
@@ -21,10 +22,11 @@ class User {
   public dob: Date;
 
   @Column()
+  // @Exclude()
   public password: string
 
   @Column({nullable: true})
-  public stipeCustomerId: string
+  public stripeCustomerId: string
 
   @Column({nullable: true})
   public avatarUrl: string

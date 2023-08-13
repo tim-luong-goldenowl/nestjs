@@ -4,11 +4,13 @@ import { RegisterCompletedParams } from 'src/donation-receivers/dtos/complete-pa
 import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/donation-receiver-registration.dto';
 import { DonationReceiverDto } from 'src/donation-receivers/dtos/donation-receiver.dto';
 import { DonationReceiversService } from 'src/donation-receivers/services/donation-receivers/donation-receivers.service';
+import { DonationService } from 'src/donation/donation.service';
 
 @Controller('donation-receivers')
 export class DonationReceiversController {
     constructor(
-        private donationRecieverService: DonationReceiversService
+        private donationRecieverService: DonationReceiversService,
+        private donationService: DonationService
     ) { }
 
     @Get()
@@ -23,9 +25,13 @@ export class DonationReceiversController {
     @Get('/:id')
     async getById(@Param() query) {
         const data = await this.donationRecieverService.getById(query.id)
+        const donationCount = await this.donationService.getDonationCount(query.id)
 
         return {
-            data
+            data: {
+                ...data,
+                donationCount
+            }
         }
     }
 

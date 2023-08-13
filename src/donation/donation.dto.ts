@@ -9,6 +9,5 @@ export class DonationDto {
     value: number
 
     @IsNotEmpty()
-    @IsNumber()
     donationReceiverId: number
 }

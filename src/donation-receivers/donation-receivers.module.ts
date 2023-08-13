@@ -4,10 +4,15 @@ import { StripeConnectService } from 'src/stripe/services/stripe-connect/stripe-
 import { DonationReceiversService } from './services/donation-receivers/donation-receivers.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import DonationReceiver from './entities/donation-receiver.entity';
+import { DonationService } from 'src/donation/donation.service';
+import Donation from 'src/donation/donation.entity';
+import { PaymentIntentService } from 'src/stripe/services/payments/payment-intent.service';
+import { StripeCustomerService } from 'src/stripe/services/customers/customer.service';
+import User from 'src/users/entities/user.entity';
 
 @Module({
   controllers: [DonationReceiversController],
-  providers: [StripeConnectService, DonationReceiversService],
-  imports: [TypeOrmModule.forFeature([DonationReceiver])]
+  providers: [StripeConnectService, DonationReceiversService, DonationService],
+  imports: [TypeOrmModule.forFeature([DonationReceiver, Donation, User])]
 })
 export class DonationReceiversModule {}
