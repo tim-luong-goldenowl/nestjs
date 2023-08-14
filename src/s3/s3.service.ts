@@ -3,7 +3,8 @@ import {
     S3Client,
     PutObjectCommandInput,
     PutObjectCommandOutput,
-    PutObjectCommand
+    PutObjectCommand,
+    DeleteObjectCommand
 } from '@aws-sdk/client-s3'
 import { ConfigService } from '@nestjs/config'
 
@@ -24,10 +25,18 @@ export class S3Service {
         })
     }
 
-    async uploadObject(file: Express.Multer.File): Promise<string> {
+    async replaceObject(file: Express.Multer.File, oldFileKey: string): Promise<string> {
         const bucket = this.configService.get<string>('S3_BUCKET_NAME');
-        const fileName = 'xxxxx'
 
+        if(oldFileKey) {
+            const deleteResult = await this.deleteObject(oldFileKey)
+
+            if (!deleteResult) {
+                return
+            }
+        }
+        
+        const fileName = Date.now() + '-' + Math.round(Math.random() * 1e9)
         const uploadInput: PutObjectCommandInput = {
             Body: file.buffer,
             Bucket: bucket,
@@ -40,9 +49,24 @@ export class S3Service {
                 new PutObjectCommand(uploadInput)
             )
 
-            return `https://${bucket}.s3.${this.region}.amazonaws.com/${fileName}`
+            const fileUrl = `https://${bucket}.s3.${this.region}.amazonaws.com/${fileName}`
+
+            return fileUrl
         } catch (error) {
             throw new HttpException(error, null)
         }
+    }
+
+    async deleteObject(fileKey: string) {
+        const bucket = this.configService.get<string>('S3_BUCKET_NAME');
+
+        const deleteInput = {
+            "Bucket": bucket,
+            "Key": fileKey
+        };
+
+        const deleteCommand = new DeleteObjectCommand(deleteInput);
+
+        return await this.s3Client.send(deleteCommand);
     }
 }

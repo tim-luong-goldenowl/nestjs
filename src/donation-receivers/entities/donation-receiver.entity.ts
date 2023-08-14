@@ -8,16 +8,16 @@ class DonationReceiver {
   @PrimaryGeneratedColumn()
   public id: number;
   
-  @Column()
+  @Column({nullable: true})
   public email: string
 
-  @Column()
+  @Column({nullable: true})
   public businessName: string
 
-  @Column()
+  @Column({nullable: true})
   public companyName: string
   
-  @Column()
+  @Column({nullable: true})
   public country: string
 
   @Column({type: 'text', nullable: true})
@@ -25,6 +25,9 @@ class DonationReceiver {
 
   @Column({nullable: true})
   public onboardingCompleteToken: string
+
+  @Column({nullable: true})
+  public avatarUrl: string
 
   @Column({default: false})
   public verified: boolean

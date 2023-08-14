@@ -25,8 +25,8 @@ export class AuthController {
 
     @Public()
     @UseGuards(LocalAuthGuard)
-    @Post('signin')
-    async signin(@Request() req, @Response() res) {
+    @Post('sign-in')
+    async signIn(@Request() req, @Response() res) {
         const jwtToken = await this.authService.login(req.user);
 
         res.cookie('token', jwtToken, {
@@ -34,6 +34,19 @@ export class AuthController {
             httpOnly: true,
             secure: false,
             maxAge: 7200000,
+            path: '/'
+          });
+
+        return res.send({success: true});
+    }
+
+    @Post('sign-out')
+    async signOut(@Response() res) {
+        res.cookie('token', null, {
+            expires: new Date(),
+            httpOnly: true,
+            secure: false,
+            maxAge: 0,
             path: '/'
           });
 

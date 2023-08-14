@@ -22,7 +22,7 @@ class User {
   public dob: Date;
 
   @Column()
-  // @Exclude()
+  @Exclude()
   public password: string
 
   @Column({nullable: true})

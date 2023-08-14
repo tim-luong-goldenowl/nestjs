@@ -65,15 +65,19 @@ export class UsersService {
                 }
             });
 
+            const oldAvatarUrl = user.avatarUrl;
+            const oldAvatarFileName = oldAvatarUrl[oldAvatarUrl.length - 1]
+
             if (avatar) {
-                const fileUrl = await this.s3Service.uploadObject(avatar)
-                tParams.avatarUrl = fileUrl
+                const uploadFileUrl = await this.s3Service.replaceObject(avatar, oldAvatarFileName)
+                tParams.avatarUrl = uploadFileUrl
             }
 
             return await this.userRepository.save({
                 id: user.id,
                 ...tParams
             });
+
         } catch (error) {
             console.log("@@@error", error)
             throw new BadRequestException
