@@ -1,15 +1,15 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UrlGeneratorService } from 'nestjs-url-generator';
-import { DonationReceiversController } from 'src/donation-receivers/controllers/donation-receivers/donation-receivers.controller';
-import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/donation-receiver-registration.dto';
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
 import { StripeConnectService } from 'src/stripe/services/stripe-connect/stripe-connect.service';
 import { Repository } from 'typeorm';
-import { randomBytes } from 'crypto';
-import { DonationReceiverDto } from 'src/donation-receivers/dtos/donation-receiver.dto';
 import { S3Service } from 'src/s3/s3.service';
 import User from 'src/users/entities/user.entity';
+import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/donation-receiver-registration.dto';
+import { randomBytes } from 'crypto';
+import { DonationReceiversController } from 'src/donation-receivers/controllers/donation-receivers/donation-receivers.controller';
+import Stripe from 'stripe';
 
 @Injectable()
 export class DonationReceiversService {
@@ -17,7 +17,6 @@ export class DonationReceiversService {
         @InjectRepository(DonationReceiver)
         private donationReceiverRepository: Repository<DonationReceiver>,
         private stripeConnectService: StripeConnectService,
-        private urlGeneratorService: UrlGeneratorService,
         private s3Service: S3Service
     ) { }
 
@@ -53,43 +52,42 @@ export class DonationReceiversService {
         return await this.donationReceiverRepository.save(donationReceiver);
     }
 
-    // async createConnectedAccount(user: User): Promise<any> {
-    //     const existingConnectedAccount = await this.donationReceiverRepository.findOne({
-    //         where: {
-    //             user: user
-    //         }
-    //     })
+    async createConnectedAccount(id: number): Promise<Stripe.Response<Stripe.AccountLink>> {
+        const donationReceiver = await this.donationReceiverRepository.findOne({
+            where: {
+                id,
+                verified: false
+            }
+        })
 
-    //     if (existingConnectedAccount) {
-    //         throw new HttpException('This user already have a Connected Account', HttpStatus.BAD_REQUEST)
-    //     }
+        if(!donationReceiver) {
+            throw new BadRequestException
+        }
 
-    //     const connectedAccount = await this.stripeConnectService.createConnectedAccount(params)
+        const connectedAccount = await this.stripeConnectService.createConnectedAccount(donationReceiver)
 
-    //     if (connectedAccount.created) {
-    //         const onboardingCompleteToken = randomBytes(20).toString('hex')
-    //         const donationReceiver = this.donationReceiverRepository.create({ ...params, onboardingCompleteToken })
+        if (connectedAccount.created) {
+            const onboardingCompleteToken = randomBytes(20).toString('hex')
 
-    //         const returnUrl = this.urlGeneratorService.generateUrlFromController({
-    //             controller: DonationReceiversController,
-    //             controllerMethod: DonationReceiversController.prototype.registerCompleted,
-    //             query: { onboardingCompleteToken }
-    //         })
+            const returnUrl = `http://localhost:3001/users/completed-dr-registration/${onboardingCompleteToken}`
 
-    //         const onboardingLink = await this.stripeConnectService.createAccountLink(connectedAccount.id, returnUrl)
+            const onboardingLink = await this.stripeConnectService.createAccountLink(connectedAccount.id, returnUrl)
 
-    //         if (onboardingLink) {
-    //             await this.donationReceiverRepository.save(donationReceiver);
-    //             return { ...donationReceiver, onboardingLink };
-    //         } else {
-    //             throw new HttpException('Something went wrong!', HttpStatus.BAD_REQUEST)
-    //         }
-    //     } else {
-    //         throw new HttpException('Something went wrong!', HttpStatus.BAD_REQUEST)
-    //     }
-    // }
+            if (onboardingLink) {
+                await this.donationReceiverRepository.save({
+                    id,
+                    onboardingCompleteToken
+                });
+                return onboardingLink;
+            } else {
+                throw new HttpException('Something went wrong!', HttpStatus.BAD_REQUEST)
+            }
+        } else {
+            throw new HttpException('Something went wrong!', HttpStatus.BAD_REQUEST)
+        }
+    }
 
-    async complete(token: string) {
+    async complete(token: string): Promise<boolean> {
         const donationReceiver = await this.donationReceiverRepository.findOne({
             where: {
                 onboardingCompleteToken: token
@@ -98,46 +96,41 @@ export class DonationReceiversService {
 
         if (donationReceiver) {
             this.donationReceiverRepository.update(donationReceiver, { verified: true })
+            return true
         }
+        
+        return false
     }
 
-    async update(params: any, avatar: Express.Multer.File): Promise<DonationReceiver> {
+    async update(params: DonationReceiverRegistrationDto, avatar: Express.Multer.File): Promise<any> {
         try {
-            const updateParams: DonationReceiver = {
-                ...params
-            }
-
-            const id = parseInt(params.id.toString())
-            delete updateParams['id']
-            delete updateParams['user']
-
-            console.log('@@@@@@@@@@@@@params', updateParams)
+            console.log(params)
 
             const donationReceiver = await this.donationReceiverRepository.findOne({
                 where: {
-                    id
+                    id: params.id
                 }
             })
+
 
             if (avatar) {
                 const oldAvatarUrl = donationReceiver.avatarUrl;
 
-                if(oldAvatarUrl) {
+                if (oldAvatarUrl) {
                     const oldAvatarFileName = oldAvatarUrl[oldAvatarUrl.length - 1]
                     const uploadedFileUrl = await this.s3Service.replaceObject(avatar, oldAvatarFileName)
-                    updateParams.avatarUrl = uploadedFileUrl
+                    params.avatarUrl = uploadedFileUrl
                 } else {
                     const uploadedFileUrl = await this.s3Service.createObject(avatar)
-                    updateParams.avatarUrl = uploadedFileUrl
+                    params.avatarUrl = uploadedFileUrl
                 }
             }
 
             return await this.donationReceiverRepository.save({
-                id,
-                ...updateParams
+                id: params.id,
+                ...params
             });
         } catch (error) {
-            console.log('@@@@@@@@@@@@@error', error)
             throw new BadRequestException
         }
     }

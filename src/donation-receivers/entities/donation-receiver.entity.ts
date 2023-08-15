@@ -32,6 +32,9 @@ class DonationReceiver {
   @Column({default: false})
   public verified: boolean
 
+  @Column({nullable: true})
+  public stripeConnectedAccountId: string
+
   @JoinColumn()
   @OneToOne(() => User)
   public user: User;

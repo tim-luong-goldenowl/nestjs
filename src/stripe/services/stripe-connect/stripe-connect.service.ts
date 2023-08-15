@@ -27,7 +27,7 @@ export class StripeConnectService {
     }
 
 
-    async createAccountLink(accountId: string, returnUrl: string) {
+    async createAccountLink(accountId: string, returnUrl: string): Promise<Stripe.Response<Stripe.AccountLink>> {
         const accountLink = await this.stripeClient.accountLinks.create({
             account: accountId,
             refresh_url: 'https://example.com/reauth',

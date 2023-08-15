@@ -1,11 +1,14 @@
 import { Body, Controller, Get, Query, Post, Req, Put, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { FormDataRequest } from 'nestjs-form-data';
 import { Public } from 'src/auth/auth.decorator';
 import { RegisterCompletedParams } from 'src/donation-receivers/dtos/complete-params.dto';
 import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/donation-receiver-registration.dto';
+import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
 import { DonationReceiversService } from 'src/donation-receivers/services/donation-receivers/donation-receivers.service';
 import { DonationService } from 'src/donation/donation.service';
+import Stripe from 'stripe';
 
 @Controller('donation-receivers')
 export class DonationReceiversController {
@@ -37,25 +40,37 @@ export class DonationReceiversController {
     }
 
     @Post('register')
-    async registration(@Req() req): Promise<any> {
+    async registration(@Req() req): Promise<DonationReceiver> {
         const donationReceiver = await this.donationRecieverService.create(req.user)
         return donationReceiver;
     }
 
-    @Public()
-    @Get('register-completed')
-    async registerCompleted(@Query() query: any) {
-        const token = query.onboardingCompleteToken;
-        return await this.donationRecieverService.complete(token)
+    @Post('verify')
+    async verify(@Body() body): Promise<any> {
+        const onboardingLink: Stripe.Response<Stripe.AccountLink> = await this.donationRecieverService.createConnectedAccount(body.id)
+        return {
+            onboardingLink: onboardingLink.url
+        }
     }
-    @Put('/update-profile')
-    // @UseInterceptors(FileInterceptor('avatar'))
-    @FormDataRequest()
-    async updateProfile(@Body() params: RegisterCompletedParams, @UploadedFile() avatar) {
-        console.log("@@@@@@@@@@@@@@@@params", params)
 
-        // const user = await this.donationRecieverService.update(params, avatar);
-        // return user;
+    @Public()
+    @Get('register-completed/:token')
+    async registerCompleted(@Param() query: any) {
+        const token = query.token;
+        const success: boolean = await this.donationRecieverService.complete(token)
+
+        return {
+            success
+        }
+    }
+
+    @Put('/update-profile')
+    @UseInterceptors(FileInterceptor('avatar'))
+    async updateProfile(@Body() params: DonationReceiverRegistrationDto, @UploadedFile() avatar) {
+        const DtoParams = plainToInstance(DonationReceiverRegistrationDto, params, { excludeExtraneousValues: true, enableImplicitConversion: true })
+
+        const donationReceiver = await this.donationRecieverService.update(DtoParams, avatar);
+        return donationReceiver;
     }
 }
 

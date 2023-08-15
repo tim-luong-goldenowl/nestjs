@@ -1,23 +1,24 @@
-import { IsEmail, IsNotEmpty, IsNumber, IsString, isNumber } from 'class-validator';
-import User from 'src/users/entities/user.entity';
+import { Expose } from 'class-transformer';
+import { IsEmail } from 'class-validator';
 
 export class DonationReceiverRegistrationDto {
-    @IsNotEmpty()
-    @IsEmail()
+    @Expose()
     email: string
 
-    @IsNumber()
+    @Expose()
     id: number
 
-    @IsNotEmpty()
+    @Expose()
     businessName: string
 
-    @IsNotEmpty()
+    @Expose()
     companyName: string
 
-    @IsNotEmpty()
+    @Expose()
     country: string
 
-    onboardingCompleteToken: string
-    user: User
+    @Expose()
+    bio: any
+
+    avatarUrl: string
 }
