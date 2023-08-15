@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Query, Post, Req, Put, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { FormDataRequest } from 'nestjs-form-data';
 import { Public } from 'src/auth/auth.decorator';
 import { RegisterCompletedParams } from 'src/donation-receivers/dtos/complete-params.dto';
 import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/donation-receiver-registration.dto';
@@ -43,15 +44,18 @@ export class DonationReceiversController {
 
     @Public()
     @Get('register-completed')
-    async registerCompleted(@Query() query: RegisterCompletedParams) {
+    async registerCompleted(@Query() query: any) {
         const token = query.onboardingCompleteToken;
         return await this.donationRecieverService.complete(token)
     }
     @Put('/update-profile')
-    @UseInterceptors(FileInterceptor('avatar'))
-    async updateProfile(@Body() params, @UploadedFile() avatar) {
-        const user = await this.donationRecieverService.update(params, avatar);
-        return user;
+    // @UseInterceptors(FileInterceptor('avatar'))
+    @FormDataRequest()
+    async updateProfile(@Body() params: RegisterCompletedParams, @UploadedFile() avatar) {
+        console.log("@@@@@@@@@@@@@@@@params", params)
+
+        // const user = await this.donationRecieverService.update(params, avatar);
+        // return user;
     }
 }
 

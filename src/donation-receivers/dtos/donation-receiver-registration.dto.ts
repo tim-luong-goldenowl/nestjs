@@ -6,6 +6,9 @@ export class DonationReceiverRegistrationDto {
     @IsEmail()
     email: string
 
+    @IsNumber()
+    id: number
+
     @IsNotEmpty()
     businessName: string
 

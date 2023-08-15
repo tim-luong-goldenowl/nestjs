@@ -26,8 +26,6 @@ export class S3Service {
     }
 
     async replaceObject(file: Express.Multer.File, oldFileKey: string): Promise<string> {
-        const bucket = this.configService.get<string>('S3_BUCKET_NAME');
-
         if(oldFileKey) {
             const deleteResult = await this.deleteObject(oldFileKey)
 
@@ -35,7 +33,17 @@ export class S3Service {
                 return
             }
         }
-        
+
+        try {
+            return await this.createObject(file)
+        } catch (error) {
+            throw new HttpException(error, null)
+        }
+    }
+
+    async createObject(file: Express.Multer.File) {
+        const bucket = this.configService.get<string>('S3_BUCKET_NAME');
+
         const fileName = Date.now() + '-' + Math.round(Math.random() * 1e9)
         const uploadInput: PutObjectCommandInput = {
             Body: file.buffer,

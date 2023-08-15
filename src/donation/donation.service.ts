@@ -11,7 +11,6 @@ export class DonationService {
 
     async getDonationCount(donationReceiverId: number): Promise<number> {
         const count = await this.donationRepository.createQueryBuilder('donations').where('donations.donationReceiverId = :donationReceiverId', { donationReceiverId }).getCount()
-        console.log("@@@@@@@@@@@@count", count)
 
         return count
     }

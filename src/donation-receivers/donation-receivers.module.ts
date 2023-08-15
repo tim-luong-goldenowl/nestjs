@@ -11,10 +11,11 @@ import { StripeCustomerService } from 'src/stripe/services/customers/customer.se
 import User from 'src/users/entities/user.entity';
 import { S3Service } from 'src/s3/s3.service';
 import { ConfigService } from '@nestjs/config';
+import { NestjsFormDataModule } from 'nestjs-form-data';
 
 @Module({
   controllers: [DonationReceiversController],
   providers: [StripeConnectService, DonationReceiversService, DonationService, S3Service, ConfigService],
-  imports: [TypeOrmModule.forFeature([DonationReceiver, Donation, User])]
+  imports: [TypeOrmModule.forFeature([DonationReceiver, Donation, User]), NestjsFormDataModule]
 })
 export class DonationReceiversModule {}

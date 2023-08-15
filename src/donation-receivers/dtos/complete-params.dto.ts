@@ -1,6 +1,6 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 
 export class RegisterCompletedParams {
-    @IsNotEmpty()
-    onboardingCompleteToken: string
+    @IsNumber()
+    id: number
 }

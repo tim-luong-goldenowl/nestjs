@@ -106,8 +106,12 @@ export class DonationReceiversService {
             const updateParams: DonationReceiver = {
                 ...params
             }
+
             const id = parseInt(params.id.toString())
             delete updateParams['id']
+            delete updateParams['user']
+
+            console.log('@@@@@@@@@@@@@params', updateParams)
 
             const donationReceiver = await this.donationReceiverRepository.findOne({
                 where: {
@@ -115,13 +119,17 @@ export class DonationReceiversService {
                 }
             })
 
-            const oldAvatarUrl = donationReceiver.avatarUrl;
- 
-            const oldAvatarFileName = oldAvatarUrl[oldAvatarUrl.length - 1]
-
             if (avatar) {
-                const uploadedFileUrl = await this.s3Service.replaceObject(avatar, oldAvatarFileName)
-                updateParams.avatarUrl = uploadedFileUrl
+                const oldAvatarUrl = donationReceiver.avatarUrl;
+
+                if(oldAvatarUrl) {
+                    const oldAvatarFileName = oldAvatarUrl[oldAvatarUrl.length - 1]
+                    const uploadedFileUrl = await this.s3Service.replaceObject(avatar, oldAvatarFileName)
+                    updateParams.avatarUrl = uploadedFileUrl
+                } else {
+                    const uploadedFileUrl = await this.s3Service.createObject(avatar)
+                    updateParams.avatarUrl = uploadedFileUrl
+                }
             }
 
             return await this.donationReceiverRepository.save({
@@ -129,6 +137,7 @@ export class DonationReceiversService {
                 ...updateParams
             });
         } catch (error) {
+            console.log('@@@@@@@@@@@@@error', error)
             throw new BadRequestException
         }
     }
