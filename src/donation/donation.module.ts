@@ -9,10 +9,12 @@ import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.
 import User from 'src/users/entities/user.entity';
 import { StripeCustomerService } from 'src/stripe/services/customers/customer.service';
 import { CreateDonationService } from './create-donation.service';
+import { StripeConnectCustomersService } from 'src/stripe-connect-customers/stripe-connect-customers.service';
+import StripeConnectCustomer from 'src/stripe-connect-customers/stripe-connect-customers.entity';
 
 @Module({
   controllers: [DonationController],
-  providers: [DonationService, PaymentIntentService, StripeCustomerService, CreateDonationService],
-  imports: [TypeOrmModule.forFeature([Donation, DonationReceiver, User]), StripeModule]
+  providers: [DonationService, StripeConnectCustomersService, PaymentIntentService, StripeCustomerService, CreateDonationService],
+  imports: [TypeOrmModule.forFeature([Donation, DonationReceiver, User, StripeConnectCustomer]), StripeModule]
 })
 export class DonationModule {}

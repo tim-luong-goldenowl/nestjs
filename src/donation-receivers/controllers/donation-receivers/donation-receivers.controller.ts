@@ -18,8 +18,8 @@ export class DonationReceiversController {
     ) { }
 
     @Get()
-    async getDonationReceivers() {
-        const data = await this.donationRecieverService.getVerified()
+    async getDonationReceivers(@Req() req) {
+        const data = await this.donationRecieverService.getVerified(req.user)
 
         return {
             data

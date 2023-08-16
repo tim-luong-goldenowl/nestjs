@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UrlGeneratorService } from 'nestjs-url-generator';
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
 import { StripeConnectService } from 'src/stripe/services/stripe-connect/stripe-connect.service';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { S3Service } from 'src/s3/s3.service';
 import User from 'src/users/entities/user.entity';
 import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/donation-receiver-registration.dto';
@@ -20,10 +20,11 @@ export class DonationReceiversService {
         private s3Service: S3Service
     ) { }
 
-    async getVerified() {
+    async getVerified(user: User) {
         return this.donationReceiverRepository.find({
             where: {
-                verified: true
+                verified: true,
+                user: Not(user.id)
             }
         })
     }
@@ -67,6 +68,8 @@ export class DonationReceiversService {
         const connectedAccount = await this.stripeConnectService.createConnectedAccount(donationReceiver)
 
         if (connectedAccount.created) {
+            const stripeConnectedAccountId = connectedAccount.id
+
             const onboardingCompleteToken = randomBytes(20).toString('hex')
 
             const returnUrl = `http://localhost:3001/users/completed-dr-registration/${onboardingCompleteToken}`
@@ -76,7 +79,8 @@ export class DonationReceiversService {
             if (onboardingLink) {
                 await this.donationReceiverRepository.save({
                     id,
-                    onboardingCompleteToken
+                    onboardingCompleteToken,
+                    stripeConnectedAccountId
                 });
                 return onboardingLink;
             } else {

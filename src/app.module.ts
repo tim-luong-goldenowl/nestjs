@@ -15,6 +15,7 @@ import { UsersMiddleware } from './users/middlewares/users/users.middleware';
 import { NestjsFormDataModule } from 'nestjs-form-data';
 import { S3Module } from './s3/s3.module';
 import { DonationModule } from './donation/donation.module';
+import { StripeConnectCustomersModule } from './stripe-connect-customers/stripe-connect-customers.module';
 
 @Module({
   imports: [
@@ -32,7 +33,8 @@ import { DonationModule } from './donation/donation.module';
       useFactory: (configService: ConfigService) => urlGeneratorModuleConfig(configService),
     }),
     S3Module,
-    DonationModule
+    DonationModule,
+    StripeConnectCustomersModule
   ],
   controllers: [],
   providers: [

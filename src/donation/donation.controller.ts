@@ -12,7 +12,7 @@ export class DonationController {
 
     @Post()
     async createDonation(@Body() params: DonationDto, @Req() req) {
-        const donation = await this.createDonationService.create(params, req.user);
+        const donation = await this.createDonationService.create(params, req.user)
         const donationCount = await this.donationService.getDonationCount(params.donationReceiverId)
 
         if (donation) {

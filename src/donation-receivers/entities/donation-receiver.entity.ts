@@ -1,4 +1,5 @@
 import Donation from 'src/donation/donation.entity';
+import StripeConnectCustomer from 'src/stripe-connect-customers/stripe-connect-customers.entity';
 import User from 'src/users/entities/user.entity';
 import { Column, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
  
@@ -41,6 +42,9 @@ class DonationReceiver {
   
   @OneToMany(() => Donation, (donation) => donation.donationReceiver)
   donations: Donation[]
+
+  @OneToMany(() => StripeConnectCustomer, (stripeConnectCustomer) => stripeConnectCustomer.donationReceiver)
+  stripeConnectCustomers: Donation[]
 }
  
 export default DonationReceiver;
