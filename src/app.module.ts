@@ -16,6 +16,7 @@ import { NestjsFormDataModule } from 'nestjs-form-data';
 import { S3Module } from './s3/s3.module';
 import { DonationModule } from './donation/donation.module';
 import { StripeConnectCustomersModule } from './stripe-connect-customers/stripe-connect-customers.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { StripeConnectCustomersModule } from './stripe-connect-customers/stripe-
     }),
     S3Module,
     DonationModule,
-    StripeConnectCustomersModule
+    StripeConnectCustomersModule,
+    MailModule,
   ],
   controllers: [],
   providers: [

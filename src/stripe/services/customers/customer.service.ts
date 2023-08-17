@@ -23,7 +23,7 @@ export class StripeCustomerService {
     async createCustomerCard(customerId: string, cardToken: string, user): Promise<Stripe.Response<Stripe.CustomerSource>> {
         let stripeCustomerId = customerId
 
-        if(!stripeCustomerId) {
+        if (!stripeCustomerId) {
             stripeCustomerId = await this.createCustomer(user)
 
             await this.userRepository.save({
@@ -48,25 +48,42 @@ export class StripeCustomerService {
         return res
     }
 
-    async cloneCustomerForConnectedAccount(customerId: string, stripeAccount): Promise<Stripe.Response<Stripe.Customer>> {
-        const token = await this.stripeClient.tokens.create(
-            {
-                customer: customerId,
-            },
-            {
-                stripeAccount: stripeAccount,
-            }
-        );
+    async cloneCustomerForConnectedAccount(customerId: string, stripeAccount) {
+        let customer = await this.retrieveCustomer(customerId, stripeAccount)
 
-        const customer = await this.stripeClient.customers.create(
-            {
-                source: token.id,
-            },
-            {
-                stripeAccount: stripeAccount,
-            }
-        );
+        if (customer) {
+            return customer
+        } else {
+            const token = await this.stripeClient.tokens.create(
+                {
+                    customer: customerId,
+                },
+                {
+                    stripeAccount: stripeAccount,
+                }
+            );
 
-        return customer;
+            customer = await this.stripeClient.customers.create(
+                {
+                    source: token.id,
+                },
+                {
+                    stripeAccount: stripeAccount,
+                }
+            );
+
+            return customer;
+        }
+
+    }
+
+    async retrieveCustomer(customerId: string, stripeAccountId: string) {
+        try {
+            return await this.stripeClient.customers.retrieve(customerId, {
+                stripeAccount: stripeAccountId
+            });
+        } catch (error) {
+            return false
+        }
     }
 }

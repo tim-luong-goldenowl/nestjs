@@ -38,7 +38,6 @@ export class CreateDonationService {
             const donationReceiver = await this.donationReceiverRepository.findOneBy({ id: params.donationReceiverId })
             let stripeConnectCustomer = await this.stripeConnectCustomersService.findByUserAndDonationReceiver(donateUser, donationReceiver)
 
-            console.log('!!!stripeConnectCustomer', stripeConnectCustomer)
             if(!stripeConnectCustomer) {
                 const customerForConnectedAccount = await this.stripeCustomerService.cloneCustomerForConnectedAccount(stripeCustomerId, donationReceiver.stripeConnectedAccountId)
                 stripeConnectCustomer = await this.stripeConnectCustomersService.create(donateUser, donationReceiver, customerForConnectedAccount.id)
@@ -46,15 +45,12 @@ export class CreateDonationService {
 
             }
 
-            console.log("stripeConnectCustomer", stripeConnectCustomer)
-
             const intentRes = await this.paymentIntentService.createPaymentIntent(
                 params.value,
                 stripeConnectCustomer.customerId,
                 donationReceiver.stripeConnectedAccountId
             )
 
-            console.log("@@@@@@@@@@@@@@intentRes", intentRes)
             if (!intentRes) {
                 throw new BadRequestException('Cannot create Payment')
             }

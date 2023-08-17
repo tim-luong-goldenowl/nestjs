@@ -8,19 +8,22 @@ import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/don
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
 import { DonationReceiversService } from 'src/donation-receivers/services/donation-receivers/donation-receivers.service';
 import { DonationService } from 'src/donation/donation.service';
+import { MailService } from 'src/mail/mail.service';
 import Stripe from 'stripe';
 
 @Controller('donation-receivers')
 export class DonationReceiversController {
     constructor(
         private donationRecieverService: DonationReceiversService,
-        private donationService: DonationService
+        private donationService: DonationService,
+        private mailService: MailService
+
     ) { }
 
     @Get()
     async getDonationReceivers(@Req() req) {
         const data = await this.donationRecieverService.getVerified(req.user)
-
+        
         return {
             data
         }
@@ -46,10 +49,19 @@ export class DonationReceiversController {
     }
 
     @Post('verify')
-    async verify(@Body() body): Promise<any> {
-        const onboardingLink: Stripe.Response<Stripe.AccountLink> = await this.donationRecieverService.createConnectedAccount(body.id)
-        return {
-            onboardingLink: onboardingLink.url
+    async verify(@Body() body, @Req() req): Promise<any> {
+        // const onboardingLink: Stripe.Response<Stripe.AccountLink> = await this.donationRecieverService.createConnectedAccount(body.id)
+
+        if (true) {
+            this.mailService.sendStripeConnectOnboardingLink(req.user, 'onboardingLink.url')
+            
+            return {
+                success: true
+            }
+        } else {
+            return {
+                success: false
+            }
         }
     }
 

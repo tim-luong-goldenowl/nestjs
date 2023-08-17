@@ -19,6 +19,7 @@ export class StripeController {
 
     @Get('/get-payment-method/:customerId')
     async getPaymentMethod(@Param() params: GetPaymentMethodDto) {
+        console.log("@@@@@@@@GetPaymentMethodDto", params)
         const paymentMethod = await this.stripeCustomerService.getPaymentMethod(params.customerId);
 
         if (paymentMethod) {
