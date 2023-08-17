@@ -11,6 +11,7 @@ export class StripeConnectCustomersService {
         @InjectRepository(StripeConnectCustomer)
         private stripeConnectCustomerRepository: Repository<StripeConnectCustomer>,
     ) { }
+
     async findByUserAndDonationReceiver(user: User, donationReceiver: DonationReceiver) {
         return await this.stripeConnectCustomerRepository.findOne({
             where: {
@@ -20,8 +21,13 @@ export class StripeConnectCustomersService {
         })
     }
 
-    async create(user: User, donationReceiver: DonationReceiver) {
-         const donation = await this.stripeConnectCustomerRepository.create({ ...params, user: donateUser, donationReceiver })
+    async create(user: User, donationReceiver: DonationReceiver, customerId: string) {
+         const customer = this.stripeConnectCustomerRepository.create({
+            user,
+            donationReceiver,
+            customerId
+         })
 
+         return await this.stripeConnectCustomerRepository.save(customer)
     }
 }

@@ -5,11 +5,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PaymentIntentService } from './services/payments/payment-intent.service';
 import { StripeCustomerService } from './services/customers/customer.service';
 import { StripeController } from './stripe.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import User from 'src/users/entities/user.entity';
 
 @Module({
   providers: [StripeConnectService, PaymentIntentService, StripeCustomerService],
   controllers: [StripeController],
   imports: [
+    TypeOrmModule.forFeature([User]),
     StripeModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

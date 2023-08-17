@@ -10,8 +10,9 @@ export class StripeController {
     ) { }
 
     @Post('/create-customer-card')
-    async createCustomerCard(@Body() params: CreateCustomerCardDto) {
-        const cardInfor = await this.stripeCustomerService.createCustomerCard(params.customerId, params.cardToken);
+    async createCustomerCard(@Body() params, @Req() req) {
+        console.log('CreateCustomerCardDto', params)
+        const cardInfor = await this.stripeCustomerService.createCustomerCard(params.customerId, params.cardToken, req.user);
 
         return cardInfor;
     }

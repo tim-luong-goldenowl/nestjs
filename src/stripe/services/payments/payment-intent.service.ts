@@ -14,38 +14,12 @@ export class PaymentIntentService {
 
         console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@customerrrrrrrrrrr", customer)
 
-        if (!customer) {
-            const token = await this.stripeClient.tokens.create(
-                {
-                    customer: customerId,
-                },
-                {
-                    stripeAccount: stripeAccount,
-                }
-            );
-
-            customer = await this.stripeClient.customers.create(
-                {
-                    source: token.id,
-                },
-                {
-                    stripeAccount: stripeAccount,
-                }
-            );
-        }
-
-        if(!customer) {
-            throw BadRequestException
-        }
-
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@customer", customer)
-
         const res = await this.stripeClient.paymentIntents.create({
             amount,
             currency: 'usd',
             confirm: true,
             metadata,
-            customer: customer.id,
+            customer: customerId,
         },
             {
                 stripeAccount

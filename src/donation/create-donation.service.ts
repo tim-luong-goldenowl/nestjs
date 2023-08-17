@@ -24,39 +24,45 @@ export class CreateDonationService {
     async create(params: DonationDto, donateUser: User): Promise<any> {
         try {
             let stripeCustomerId = donateUser.stripeCustomerId
-            const donationReceiver = await this.donationReceiverRepository.findOneBy({ id: params.donationReceiverId })
-            const stripeConnectCustomerId = await this.stripeConnectCustomersService.findByUserAndDonationReceiver(donateUser, donationReceiver)
 
-            if(!stripeConnectCustomerId) {
-                
+            if (!stripeCustomerId) {
+                const newCustomerId = await this.stripeCustomerService.createCustomer(donateUser)
+                stripeCustomerId = newCustomerId
+
+                await this.userRepository.save({
+                    id: donateUser.id,
+                    ...{ stripeCustomerId }
+                });
             }
-            console.log("stripeConnectCustomerId", stripeConnectCustomerId)
 
-            // if (!stripeCustomerId) {
-            //     const newCustomerId = await this.stripeCustomerService.createCustomer(donateUser)
-            //     stripeCustomerId = newCustomerId
+            const donationReceiver = await this.donationReceiverRepository.findOneBy({ id: params.donationReceiverId })
+            let stripeConnectCustomer = await this.stripeConnectCustomersService.findByUserAndDonationReceiver(donateUser, donationReceiver)
 
-            //     await this.userRepository.save({
-            //         id: donateUser.id,
-            //         ...{ stripeCustomerId }
-            //     });
-            // }
+            console.log('!!!stripeConnectCustomer', stripeConnectCustomer)
+            if(!stripeConnectCustomer) {
+                const customerForConnectedAccount = await this.stripeCustomerService.cloneCustomerForConnectedAccount(stripeCustomerId, donationReceiver.stripeConnectedAccountId)
+                stripeConnectCustomer = await this.stripeConnectCustomersService.create(donateUser, donationReceiver, customerForConnectedAccount.id)
+                await this.donationReceiverRepository.save(donationReceiver);
 
-            // const intentRes = await this.paymentIntentService.createPaymentIntent(
-            //     params.value,
-            //     stripeCustomerId,
-            //     donationReceiver.stripeConnectedAccountId
-            // )
+            }
 
-            // console.log("@@@@@@@@@@@@@@intentRes", intentRes)
-            // if (!intentRes) {
-            //     throw new BadRequestException('Cannot create Payment')
-            // }
+            console.log("stripeConnectCustomer", stripeConnectCustomer)
 
-            // const donation = this.donationRepository.create({ ...params, user: donateUser, donationReceiver })
-            // await this.donationRepository.save(donation);
+            const intentRes = await this.paymentIntentService.createPaymentIntent(
+                params.value,
+                stripeConnectCustomer.customerId,
+                donationReceiver.stripeConnectedAccountId
+            )
 
-            // return donation;
+            console.log("@@@@@@@@@@@@@@intentRes", intentRes)
+            if (!intentRes) {
+                throw new BadRequestException('Cannot create Payment')
+            }
+
+            const donation = this.donationRepository.create({ ...params, user: donateUser, donationReceiver })
+            await this.donationRepository.save(donation);
+
+            return donation;
         } catch (error) {
             console.log("@@@@@@@@@@@@@@error", error)
 
