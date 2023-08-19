@@ -17,6 +17,8 @@ import { S3Module } from './s3/s3.module';
 import { DonationModule } from './donation/donation.module';
 import { StripeConnectCustomersModule } from './stripe-connect-customers/stripe-connect-customers.module';
 import { MailModule } from './mail/mail.module';
+import { BullModule } from '@nestjs/bull';
+import { JobConsumersModule } from './job-consumers/job-consumers.module';
 
 @Module({
   imports: [
@@ -37,6 +39,16 @@ import { MailModule } from './mail/mail.module';
     DonationModule,
     StripeConnectCustomersModule,
     MailModule,
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
+    // BullModule.registerQueue({
+    //   name: 'send-mail-queue'
+    // }),
+    // JobConsumersModule,
   ],
   controllers: [],
   providers: [

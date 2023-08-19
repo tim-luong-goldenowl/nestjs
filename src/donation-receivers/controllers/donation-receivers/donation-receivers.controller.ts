@@ -1,9 +1,9 @@
+import { InjectQueue } from '@nestjs/bull';
 import { Body, Controller, Get, Query, Post, Req, Put, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { plainToClass, plainToInstance } from 'class-transformer';
-import { FormDataRequest } from 'nestjs-form-data';
+import { Queue } from 'bull';
+import { plainToInstance } from 'class-transformer';
 import { Public } from 'src/auth/auth.decorator';
-import { RegisterCompletedParams } from 'src/donation-receivers/dtos/complete-params.dto';
 import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/donation-receiver-registration.dto';
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
 import { DonationReceiversService } from 'src/donation-receivers/services/donation-receivers/donation-receivers.service';
@@ -16,14 +16,14 @@ export class DonationReceiversController {
     constructor(
         private donationRecieverService: DonationReceiversService,
         private donationService: DonationService,
-        private mailService: MailService
-
-    ) { }
+        private mailService: MailService,
+        @InjectQueue('send-mail-queue') private sendMailQueue: Queue
+    ) {}
 
     @Get()
     async getDonationReceivers(@Req() req) {
         const data = await this.donationRecieverService.getVerified(req.user)
-        
+
         return {
             data
         }
@@ -50,11 +50,11 @@ export class DonationReceiversController {
 
     @Post('verify')
     async verify(@Body() body, @Req() req): Promise<any> {
-        // const onboardingLink: Stripe.Response<Stripe.AccountLink> = await this.donationRecieverService.createConnectedAccount(body.id)
+        const onboardingLink: Stripe.Response<Stripe.AccountLink> = await this.donationRecieverService.createConnectedAccount(body.id)
 
-        if (true) {
-            this.mailService.sendStripeConnectOnboardingLink(req.user, 'onboardingLink.url')
-            
+        if (onboardingLink.created) {
+            this.sendMailQueue.add('sendOnboardingLinkMail', {user: req.user, onboardingLink: onboardingLink.url});
+
             return {
                 success: true
             }

@@ -14,10 +14,14 @@ import { ConfigService } from '@nestjs/config';
 import { NestjsFormDataModule } from 'nestjs-form-data';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MailService } from 'src/mail/mail.service';
+import { MailerJobConsumer } from 'src/job-consumers/mailer-job.consumer';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   controllers: [DonationReceiversController],
-  providers: [StripeConnectService, DonationReceiversService, DonationService, S3Service, ConfigService, MailService],
-  imports: [TypeOrmModule.forFeature([DonationReceiver, Donation, User])]
+  providers: [StripeConnectService, DonationReceiversService, DonationService, S3Service, ConfigService, MailService, MailerJobConsumer],
+  imports: [TypeOrmModule.forFeature([DonationReceiver, Donation, User]), BullModule.registerQueue({
+    name: 'send-mail-queue'
+  }),]
 })
 export class DonationReceiversModule {}

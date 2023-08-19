@@ -12,14 +12,14 @@ import { join } from 'path';
                 secure: false,
                 auth: {
                     user: 'tim.luong.goldenowl@gmail.com',
-                    pass: 'Infidels@123',
+                    pass: 'yophcppbmtyuponn',
                 },
             },
             defaults: {
                 from: '"No Reply" <noreply@example.com>',
             },
             template: {
-                dir: join(__dirname, './templates'),
+                dir: join(process.cwd(), './dist/templates'),
                 adapter: new HandlebarsAdapter(),
                 options: {
                     strict: true,
