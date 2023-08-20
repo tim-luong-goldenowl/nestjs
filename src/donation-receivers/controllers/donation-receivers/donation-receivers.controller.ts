@@ -9,6 +9,7 @@ import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.
 import { DonationReceiversService } from 'src/donation-receivers/services/donation-receivers/donation-receivers.service';
 import { DonationService } from 'src/donation/donation.service';
 import { MailService } from 'src/mail/mail.service';
+import User from 'src/users/entities/user.entity';
 import Stripe from 'stripe';
 
 @Controller('donation-receivers')
@@ -30,15 +31,16 @@ export class DonationReceiversController {
     }
 
     @Get('/:id')
-    async getById(@Param() query) {
+    async getById(@Param() query, @Req() req) {
         const data = await this.donationRecieverService.getById(query.id)
         const donationCount = await this.donationService.getDonationCount(query.id)
 
         return {
             data: {
                 ...data,
-                donationCount
-            }
+                donationCount,
+            },
+            canMakeDonate: req.user.stripeCustomerId.length
         }
     }
 
@@ -50,11 +52,9 @@ export class DonationReceiversController {
 
     @Post('verify')
     async verify(@Body() body, @Req() req): Promise<any> {
-        const onboardingLink: Stripe.Response<Stripe.AccountLink> = await this.donationRecieverService.createConnectedAccount(body.id)
+        const onboardingLink = await this.donationRecieverService.processVerifyForDonationReceiver(body.id)
 
-        if (onboardingLink.created) {
-            this.sendMailQueue.add('sendOnboardingLinkMail', {user: req.user, onboardingLink: onboardingLink.url});
-
+        if (onboardingLink) {
             return {
                 success: true
             }

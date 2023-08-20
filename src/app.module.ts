@@ -18,7 +18,6 @@ import { DonationModule } from './donation/donation.module';
 import { StripeConnectCustomersModule } from './stripe-connect-customers/stripe-connect-customers.module';
 import { MailModule } from './mail/mail.module';
 import { BullModule } from '@nestjs/bull';
-import { JobConsumersModule } from './job-consumers/job-consumers.module';
 
 @Module({
   imports: [
@@ -39,16 +38,16 @@ import { JobConsumersModule } from './job-consumers/job-consumers.module';
     DonationModule,
     StripeConnectCustomersModule,
     MailModule,
-    BullModule.forRoot({
-      redis: {
-        host: 'localhost',
-        port: 6379,
-      },
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        redis: {
+          host: configService.get('REDIS_HOST'),
+          port: configService.get('REDIS_PORT'),
+        }
+      })
     }),
-    // BullModule.registerQueue({
-    //   name: 'send-mail-queue'
-    // }),
-    // JobConsumersModule,
   ],
   controllers: [],
   providers: [

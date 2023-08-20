@@ -1,15 +1,17 @@
+
 import { Injectable } from '@nestjs/common';
 import { InjectStripe } from 'nestjs-stripe';
-import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/donation-receiver-registration.dto';
 import Stripe from 'stripe';
+import { CreateConnectedAccountOptions, CreateConnectedAccountResponse } from '../../types';
+import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/donation-receiver-registration.dto';
 
 @Injectable()
 export class StripeConnectService {
     constructor(
         @InjectStripe() private readonly stripeClient: Stripe
-    ) {}
+    ) { }
 
-    async createConnectedAccount(params: DonationReceiverRegistrationDto) {
+    async createConnectedAccount(params: DonationReceiverRegistrationDto, options: CreateConnectedAccountOptions): Promise<CreateConnectedAccountResponse> {
         const account = await this.stripeClient.accounts.create({
             type: 'standard',
             country: params.country,
@@ -23,11 +25,23 @@ export class StripeConnectService {
             }
         });
 
-        return account;
+        if (account.created) {
+            const onboardingLink = await this.createAccountOnboardingLink(account.id, options.returnUrl)
+
+            return {
+                success: true,
+                onboardingLink,
+                connectedAccountId: account.id
+            }
+        } else {
+            return {
+                success: false
+            }
+        }
     }
 
 
-    async createAccountLink(accountId: string, returnUrl: string): Promise<Stripe.Response<Stripe.AccountLink>> {
+    async createAccountOnboardingLink(accountId: string, returnUrl: string): Promise<string> {
         const accountLink = await this.stripeClient.accountLinks.create({
             account: accountId,
             refresh_url: 'https://example.com/reauth',
@@ -35,6 +49,6 @@ export class StripeConnectService {
             type: 'account_onboarding',
         });
 
-        return accountLink;
+        return accountLink.url;
     }
 }

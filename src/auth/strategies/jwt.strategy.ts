@@ -4,7 +4,7 @@ import { Injectable, Req, UnauthorizedException } from '@nestjs/common';
 import { jwtConstants } from '../constants';
 import { iUserJwtPayload } from '../interfaces/user-jwt-payload.interfact';
 import { ConfigService } from '@nestjs/config';
-import { UsersService } from 'src/users/services/users/users.service';
+import { UsersService } from 'src/users/services/users.service';
 import { Request as RequestType } from 'express';
 
 @Injectable()

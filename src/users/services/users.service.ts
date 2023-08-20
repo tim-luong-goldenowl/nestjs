@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { UserRegistrationParamsDto } from 'src/auth/dtos/user-registration-params.dto';
 import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
 import { S3Service } from 'src/s3/s3.service';
-import { UserDto } from 'src/users/dtos/user.dto';
 import User from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 
@@ -13,7 +13,7 @@ export class UsersService {
         @InjectRepository(User)
         private userRepository: Repository<User>,
         private s3Service: S3Service,
-        @InjectRepository(DonationReceiver) private donationReceiverRepository: Repository<DonationReceiver>
+        @InjectRepository(DonationReceiver) private donationReceiverRepository: Repository<DonationReceiver>,
     ) { }
 
     async createUser(params: UserRegistrationParamsDto): Promise<User> {
@@ -33,11 +33,13 @@ export class UsersService {
     }
 
     async getProfiles(id: number): Promise<any> {
-        const user = await this.userRepository.findOne({
+        const user: User = await this.userRepository.findOne({
             where: {
                 id
             }
         });
+
+        const userInstance = plainToInstance(User, user, {})
 
         const donationReceiver = await this.donationReceiverRepository.findOne({
             where: {
@@ -45,9 +47,11 @@ export class UsersService {
             }
         });
 
+        const donationReceiverInstance = plainToInstance(DonationReceiver, donationReceiver, {})
+
         return {
-            user,
-            donationReceiver
+            user: userInstance,
+            donationReceiver: donationReceiverInstance
         }
     }
 
@@ -66,11 +70,16 @@ export class UsersService {
             });
 
             const oldAvatarUrl = user.avatarUrl;
-            const oldAvatarFileName = oldAvatarUrl[oldAvatarUrl.length - 1]
 
             if (avatar) {
-                const uploadFileUrl = await this.s3Service.replaceObject(avatar, oldAvatarFileName)
-                tParams.avatarUrl = uploadFileUrl
+                if (oldAvatarUrl) {
+                    const oldAvatarFileName = oldAvatarUrl[oldAvatarUrl.length - 1]
+                    const uploadFileUrl = await this.s3Service.replaceObject(avatar, oldAvatarFileName)
+                    tParams.avatarUrl = uploadFileUrl
+                } else {
+                    const uploadFileUrl = await this.s3Service.createObject(avatar)
+                    tParams.avatarUrl = uploadFileUrl
+                }
             }
 
             return await this.userRepository.save({
@@ -79,7 +88,7 @@ export class UsersService {
             });
 
         } catch (error) {
-            console.log("@@@error", error)
+            console.log("eee", error)
             throw new BadRequestException
         }
     }

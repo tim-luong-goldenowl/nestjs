@@ -20,8 +20,8 @@ export class StripeCustomerService {
         return res.id
     }
 
-    async createCustomerCard(customerId: string, cardToken: string, user): Promise<Stripe.Response<Stripe.CustomerSource>> {
-        let stripeCustomerId = customerId
+    async createCustomerCard(cardToken: string, user: User): Promise<Stripe.Response<Stripe.CustomerSource>> {
+        let stripeCustomerId = user.stripeCustomerId
 
         if (!stripeCustomerId) {
             stripeCustomerId = await this.createCustomer(user)

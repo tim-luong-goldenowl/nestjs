@@ -1,18 +1,18 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
-import User from 'src/users/entities/user.entity';
+import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
 
 @Injectable()
 export class MailService {
     constructor(private mailerService: MailerService) { }
 
-    async sendStripeConnectOnboardingLink(user: User, onboardingUrl: string) {
+    async sendStripeConnectOnboardingLink(donationReceiver: DonationReceiver, onboardingUrl: string) {
         await this.mailerService.sendMail({
-            to: 'timdemo@mailinator.com',
-            subject: 'Welcome to Nice App! Confirm your Email',
+            to: donationReceiver.email,
+            subject: 'Donation onboarding link',
             template: './onboarding-link',
             context: {
-                name: user.firstName,
+                name: donationReceiver.businessName,
                 url: onboardingUrl,
             },
         });

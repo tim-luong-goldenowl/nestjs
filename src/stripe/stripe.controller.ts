@@ -1,51 +1,28 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Req, SerializeOptions } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, Req } from '@nestjs/common';
 import { StripeCustomerService } from './services/customers/customer.service';
-import { CreateCustomerCardDto } from './dtos/createCustomerCard.dto';
-import { GetPaymentMethodDto } from './dtos/getPaymentMethod.dto';
+import { Public } from 'src/auth/auth.decorator';
+import { ClientProxy } from '@nestjs/microservices';
+import { STRIPE_MICROSERVICE_NAME } from 'src/constants';
 
 @Controller('stripe')
 export class StripeController {
     constructor(
-        private stripeCustomerService: StripeCustomerService
+        private stripeCustomerService: StripeCustomerService,
+        @Inject(STRIPE_MICROSERVICE_NAME) private readonly stripeMicroserviceClient: ClientProxy,
     ) { }
 
     @Post('/create-customer-card')
     async createCustomerCard(@Body() params, @Req() req) {
-        console.log('CreateCustomerCardDto', params)
-        const cardInfor = await this.stripeCustomerService.createCustomerCard(params.customerId, params.cardToken, req.user);
+        const cardInfor = await this.stripeCustomerService.createCustomerCard(params.cardToken, req.user);
 
-        return cardInfor;
-    }
-
-    @Get('/get-payment-method/:customerId')
-    async getPaymentMethod(@Param() params: GetPaymentMethodDto) {
-        console.log("@@@@@@@@GetPaymentMethodDto", params)
-        const paymentMethod = await this.stripeCustomerService.getPaymentMethod(params.customerId);
-
-        if (paymentMethod) {
-            const firstPaymentMethod: any = paymentMethod.data.at(0)
-
-            const {
-                id,
-                last4,
-                brand,
-                country,
-            } = firstPaymentMethod
-
+        if(cardInfor) {
             return {
-                success: true,
-                data: {
-                    id,
-                    last4,
-                    brand,
-                    country,
-                }
+                success: true
             }
         } else {
             return {
                 success: false
             }
         }
-
     }
 }

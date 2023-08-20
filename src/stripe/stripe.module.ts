@@ -7,9 +7,24 @@ import { StripeCustomerService } from './services/customers/customer.service';
 import { StripeController } from './stripe.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import User from 'src/users/entities/user.entity';
+import { STRIPE_MICROSERVICE_NAME } from 'src/constants';
+import { ClientProxyFactory, Transport } from '@nestjs/microservices';
 
 @Module({
-  providers: [StripeConnectService, PaymentIntentService, StripeCustomerService],
+  providers: [StripeConnectService, PaymentIntentService, StripeCustomerService, ConfigService,
+    {
+      provide: STRIPE_MICROSERVICE_NAME,
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) =>
+        ClientProxyFactory.create({
+          transport: Transport.TCP,
+          options: {
+            host: configService.get('STRIPE_MICROSERVICE_HOST'),
+            port: configService.get('STRIPE_MICROSERVICE_PORT'),
+          },
+        }),
+    },
+  ],
   controllers: [StripeController],
   imports: [
     TypeOrmModule.forFeature([User]),

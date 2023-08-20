@@ -1,23 +1,32 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UrlGeneratorService } from 'nestjs-url-generator';
-import DonationReceiver from 'src/donation-receivers/entities/donation-receiver.entity';
-import { StripeConnectService } from 'src/stripe/services/stripe-connect/stripe-connect.service';
 import { Not, Repository } from 'typeorm';
-import { S3Service } from 'src/s3/s3.service';
-import User from 'src/users/entities/user.entity';
-import { DonationReceiverRegistrationDto } from 'src/donation-receivers/dtos/donation-receiver-registration.dto';
 import { randomBytes } from 'crypto';
-import { DonationReceiversController } from 'src/donation-receivers/controllers/donation-receivers/donation-receivers.controller';
-import Stripe from 'stripe';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
+import DonationReceiver from '../../entities/donation-receiver.entity';
+import { DonationReceiverRegistrationDto } from '../../dtos/donation-receiver-registration.dto';
+import { StripeConnectService } from 'src/stripe/services/stripe-connect/stripe-connect.service';
+import { S3Service } from 'src/s3/s3.service';
+import { SEND_MAIL_QUEUE_NAME, SEND_ONBOARDING_LINK_JOB_NAME } from 'src/constants';
+import User from 'src/users/entities/user.entity';
+import { CreateConnectedAccountResponse } from 'src/stripe/types';
 
 @Injectable()
 export class DonationReceiversService {
+    public get sendMailQueue(): Queue {
+        return this._sendMailQueue;
+    }
+    public set sendMailQueue(value: Queue) {
+        this._sendMailQueue = value;
+    }
     constructor(
         @InjectRepository(DonationReceiver)
         private donationReceiverRepository: Repository<DonationReceiver>,
         private stripeConnectService: StripeConnectService,
-        private s3Service: S3Service
+        private s3Service: S3Service,
+        @InjectQueue(SEND_MAIL_QUEUE_NAME)
+        private _sendMailQueue: Queue
     ) { }
 
     async getVerified(user: User) {
@@ -53,7 +62,7 @@ export class DonationReceiversService {
         return await this.donationReceiverRepository.save(donationReceiver);
     }
 
-    async createConnectedAccount(id: number): Promise<Stripe.Response<Stripe.AccountLink>> {
+    async processVerifyForDonationReceiver(id: number): Promise<any> {
         const donationReceiver = await this.donationReceiverRepository.findOne({
             where: {
                 id,
@@ -61,33 +70,28 @@ export class DonationReceiversService {
             }
         })
 
-        if(!donationReceiver) {
+        if (!donationReceiver) {
             throw new BadRequestException
         }
 
-        const connectedAccount = await this.stripeConnectService.createConnectedAccount(donationReceiver)
+        const onboardingCompleteToken = randomBytes(20).toString('hex')
+        const returnUrl = `http://localhost:3001/users/completed-dr-registration/${onboardingCompleteToken}`
 
-        if (connectedAccount.created) {
-            const stripeConnectedAccountId = connectedAccount.id
+        const connectedAccountResult: CreateConnectedAccountResponse = await this.stripeConnectService.createConnectedAccount(donationReceiver, { returnUrl })
 
-            const onboardingCompleteToken = randomBytes(20).toString('hex')
+        if (connectedAccountResult.success) {
+            const onboardingLink = connectedAccountResult.onboardingLink
 
-            const returnUrl = `http://localhost:3001/users/completed-dr-registration/${onboardingCompleteToken}`
+            await this.donationReceiverRepository.save({
+                id,
+                onboardingCompleteToken,
+                stripeConnectedAccountId: connectedAccountResult.connectedAccountId
+            });
 
-            const onboardingLink = await this.stripeConnectService.createAccountLink(connectedAccount.id, returnUrl)
-
-            if (onboardingLink) {
-                await this.donationReceiverRepository.save({
-                    id,
-                    onboardingCompleteToken,
-                    stripeConnectedAccountId
-                });
-                return onboardingLink;
-            } else {
-                throw new HttpException('Something went wrong!', HttpStatus.BAD_REQUEST)
-            }
+            this.sendMailQueue.add(SEND_ONBOARDING_LINK_JOB_NAME, { donationReceiver, onboardingLink: connectedAccountResult.onboardingLink });
+            return onboardingLink;
         } else {
-            throw new HttpException('Something went wrong!', HttpStatus.BAD_REQUEST)
+            return false
         }
     }
 
@@ -99,10 +103,10 @@ export class DonationReceiversService {
         })
 
         if (donationReceiver) {
-            this.donationReceiverRepository.update(donationReceiver, { verified: true })
+            this.donationReceiverRepository.update(donationReceiver, { verified: true, onboardingCompleteToken: null })
             return true
         }
-        
+
         return false
     }
 
